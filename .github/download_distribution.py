@@ -208,10 +208,10 @@ def fetch_extra_content_urls() -> List[str]:
     result.extend([("/Scripts/", "https://raw.githubusercontent.com/MiSTer-devel/Scripts_MiSTer/master/rtc.sh")])
     result.extend([("/Scripts/", "https://raw.githubusercontent.com/MiSTer-devel/Scripts_MiSTer/master/timezone.sh")])
     result.extend([("/Scripts/update.sh", "https://raw.githubusercontent.com/jackyangantelope/Downloader_MiSTer/main/downloader.sh")])
-    result.extend([("/Scripts/.config/downloader/downloader_latest.zip", "https://github.com/jackyangantelope/Downloader_MiSTer/releases/download/latest/dont_download.zip")])
-    result.extend([("/Scripts/.config/downloader/downloader_bin", "https://github.com/jackyangantelope/Downloader_MiSTer/releases/download/latest/downloader_bin")])
+    result.extend([("/Scripts/.config/Retroremake/downloader_latest.zip", "https://github.com/jackyangantelope/Downloader_MiSTer/releases/download/latest/dont_download.zip")])
+    result.extend([("/Scripts/.config/Retroremake/downloader_bin", "https://github.com/jackyangantelope/Downloader_MiSTer/releases/download/latest/downloader_bin")])
     result.extend(['user-content-file-valid-hash'])
-    result.extend([("/Scripts/.config/downloader/cacert.pem", "https://curl.se/ca/cacert.pem", "sha256sum", "https://curl.se/ca/cacert.pem.sha256")])
+    result.extend([("/Scripts/.config/Retroremake/cacert.pem", "https://curl.se/ca/cacert.pem", "sha256sum", "https://curl.se/ca/cacert.pem.sha256")])
     result.extend(["user-content-unzip"])
     result.extend([("/games/VECTREX/Overlays/", "https://raw.githubusercontent.com/MiSTer-devel/Vectrex_MiSTer/master/overlays/overlays.zip")])
 
