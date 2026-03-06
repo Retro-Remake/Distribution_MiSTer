@@ -27,6 +27,31 @@ def main() -> None:
     start = time.time()
 
     cores = fetch_cores()
+    custom_cores = fetch_custom_cores()
+
+    # Merge: custom cores override official cores by (category + home) key
+    if len(custom_cores) > 0:
+        # Build a set of custom core keys for fast lookup
+        custom_keys = {}
+        for cc in custom_cores:
+            key = cc['category'].lower() + '|' + cc['home'].lower()
+            custom_keys[key] = cc
+
+        # Remove official cores that have a custom replacement
+        merged = []
+        for c in cores:
+            key = c['category'].lower() + '|' + c['home'].lower()
+            if key in custom_keys:
+                print(f'Custom core overrides official: {c["url"]} -> {custom_keys[key]["url"]} (home={c["home"]})')
+            else:
+                merged.append(c)
+
+        # Append all custom cores
+        merged.extend(custom_cores)
+        cores = sorted(merged, key=lambda element: element['category'].lower() + element['url'].lower())
+
+        print(f'After merge: {len(cores)} total cores ({len(custom_cores)} custom, {len(custom_keys)} overrides)')
+        
     extra_content_urls = fetch_extra_content_urls()
     extra_content_categories = classify_extra_content(extra_content_urls)
 
@@ -179,6 +204,69 @@ def fetch_cores() -> List[CoreProps]:
             url = matches.group(2).strip()
             result.append({'name': name, 'url': url, 'category': '_Arcade'})
 
+    return sorted(result, key=lambda element: element['category'].lower() + element['url'].lower())
+
+def fetch_custom_cores() -> List[CoreProps]:
+    """Fetch cores from custom Cores.md in Downloader_MiSTer repo"""
+    custom_cores_url = 'https://raw.githubusercontent.com/jackyangantelope/Downloader_MiSTer/main/Cores.md'
+    try:
+        text = fetch_text(custom_cores_url)
+    except Exception as e:
+        print(f'WARNING: Could not fetch custom Cores.md: {e}')
+        return []
+
+    link_regex = re.compile(r'\[(.*)\]\((.*)\)')
+
+    reading_cores_list = False
+    result: List[CoreProps] = []
+    category = None
+
+    for line in text.splitlines():
+        line = line.strip()
+        lower = line.lower()
+
+        if not reading_cores_list:
+            if 'cores_list_start' in lower:
+                reading_cores_list = True
+        else:
+            if 'cores_list_end' in lower:
+                reading_cores_list = False
+                continue
+
+            if lower.startswith('##'):
+                header = lower.replace('#', '').strip()
+
+                if 'computer' in header:
+                    category = '_Computer'
+                elif 'console' in header:
+                    category = '_Console'
+                elif 'service' in header or 'utility' in header:
+                    category = '_Utility'
+                elif 'other' in header:
+                    category = '_Other'
+
+                continue
+
+            if 'https://github.com/' not in lower:
+                continue
+
+            columns = line.split('|')
+            if len(columns) < 3:
+                continue
+            matches = link_regex.search(columns[1])
+            if not matches:
+                continue
+
+            name = matches.group(1).strip()
+            url = matches.group(2).strip()
+            home = columns[2].strip()
+            if category is None:
+                print(f'WARNING: Missing category for custom core: {url}')
+                continue
+
+            result.append({'name': name, 'url': url, 'home': home, 'category': category})
+
+    print(f'Custom cores fetched: {len(result)}')
     return sorted(result, key=lambda element: element['category'].lower() + element['url'].lower())
 
 def fetch_extra_content_urls() -> List[str]:
