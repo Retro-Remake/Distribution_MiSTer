@@ -30,27 +30,25 @@ def main() -> None:
     custom_cores = fetch_custom_cores()
 
     # Merge: custom cores override official cores by (category + home) key
+    # Merge: custom cores override official cores by key
     if len(custom_cores) > 0:
-        # Build a set of custom core keys for fast lookup
         custom_keys = {}
         for cc in custom_cores:
-            key = cc['category'].lower() + '|' + cc['home'].lower()
+            key = cc['category'].lower() + '|' + cc.get('home', cc['url']).lower()
             custom_keys[key] = cc
 
-        # Remove official cores that have a custom replacement
         merged = []
         for c in cores:
-            key = c['category'].lower() + '|' + c['home'].lower()
+            key = c['category'].lower() + '|' + c.get('home', c['url']).lower()
             if key in custom_keys:
-                print(f'Custom core overrides official: {c["url"]} -> {custom_keys[key]["url"]} (home={c["home"]})')
+                print(f'Custom core overrides official: {c["url"]} -> {custom_keys[key]["url"]}')
             else:
                 merged.append(c)
 
-        # Append all custom cores
         merged.extend(custom_cores)
         cores = sorted(merged, key=lambda element: element['category'].lower() + element['url'].lower())
 
-        print(f'After merge: {len(cores)} total cores ({len(custom_cores)} custom, {len(custom_keys)} overrides)')
+        print(f'After merge: {len(cores)} total cores ({len(custom_cores)} custom)')
         
     extra_content_urls = fetch_extra_content_urls()
     extra_content_categories = classify_extra_content(extra_content_urls)
